@@ -6,6 +6,7 @@ import java.util.Collection;
 import com.example.jwt.jwt.JWTAuthenticationFilter;
 import com.example.jwt.jwt.JWTLoginFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -18,20 +19,25 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+//@EnableWebSecurity
+//@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private MyAuthenticationProvider provider;// 自定义的AuthenticationProvider
+    /**
+     * 自定义的AuthenticationProvider
+     */
+//    @Autowired
+//    private MyAuthenticationProvider provider;
 
     @Bean
-    public PasswordEncoder myPasswordEncoder() {
-        return new MyPasswordEncoder();//自定义的加密工具
+    @ConditionalOnMissingBean(value = PasswordEncoder.class)
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Override
@@ -47,13 +53,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(new JWTLoginFilter(authenticationManager()))
                 .addFilter(new JWTAuthenticationFilter(authenticationManager()));
     }
-
+/*
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(provider);
         auth.userDetailsService(userDetailsService());
-    }
+    }*/
 
+    @Override
     @Bean
     public UserDetailsService userDetailsService() {
         InMemoryUserDetailsManager iud = new InMemoryUserDetailsManager();
